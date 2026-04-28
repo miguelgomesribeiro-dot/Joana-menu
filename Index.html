@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Joana Come a Tapa — Menu</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<style>
+/* ════════════════════════════════════════════
+   VARIABLES & RESET
+════════════════════════════════════════════ */
+:root {
+  --bg: #ffffff;
+  --card: #f9f7f4;
+  --char: #1a1a1a;
+  --mid: #555;
+  --muted: #999;
+  --gold: #b8873a;
+  --gold-bg: #fdf8ef;
+  --rust: #b83232;
+  --green: #2e7d4f;
+  --red: #c0392b;
+  --border: #e8e2da;
+  --shadow: 0 2px 12px rgba(0,0,0,.07);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{font-size:16px;scroll-behavior:smooth}
+body{background:var(--bg);font-family:'Jost',sans-serif;color:var(--char);min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--gold),#d4a855,var(--gold));z-index:999}
+input,textarea,select,button{font-family:'Jost',sans-serif}
+
+/* ════════════════════════════════════════════
+LOADING SCREEN
+════════════════════════════════════════════ */
+#loadScreen{position:fixed;inset:0;background:#fff;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;transition:opacity .4s}
+#loadScreen.fade{opacity:0;pointer-events:none}
+.load-logo{width:64px;height:64px;border-radius:50%;background:#1a1a1a;display:flex;align-items:center;justify-content:center}
+.load-letter{font-family:‘Cormorant Garamond’,serif;font-size:1.8rem;color:var(–gold)}
+.load-text{font-size:13px;letter-spacing:.2em;text-transform:uppercase;color:var(–muted)}
+.load-bar{width:120px;height:2px;background:#eee;border-radius:2px;overflow:hidden}
+.load-bar-inner{height:100%;background:var(–gold);border-radius:2px;animation:loadprogress 1.2s ease forwards}
+@keyframes loadprogress{from{width:0}to{width:100%}}
+
+/* ════════════════════════════════════════════
+LANG BAR
+════════════════════════════════════════════ */
+.lang-bar{position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:500;display:flex;gap:2px;background:#fff;border:1px solid var(–border);border-radius:24px;padding:3px;box-shadow:var(–shadow)}
+.lang-btn{border:none;background:transparent;padding:5px 14px;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(–muted);cursor:pointer;border-radius:18px;transition:all .2s}
+.lang-btn.active{background:var(–char);color:#fff}
+
+/* ════════════════════════════════════════════
+MENU PAGE
+════════════════════════════════════════════ */
+#menuPage{max-width:600px;margin:0 auto;padding:62px 18px 100px}
+
+/* HEADER */
+.header{text-align:center;margin-bottom:40px}
+.logo-ring{width:82px;height:82px;border-radius:50%;background:var(–char);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;box-shadow:0 6px 24px rgba(0,0,0,.18);position:relative}
+.logo-ring::after{content:’’;position:absolute;inset:-5px;border-radius:50%;border:1.5px solid rgba(184,135,58,.4)}
+.logo-letter{font-family:‘Cormorant Garamond’,serif;font-size:2rem;font-weight:400;color:var(–gold)}
+.rest-name{font-family:‘Cormorant Garamond’,serif;font-size:1.9rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;line-height:1.1}
+.rest-sub{font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(–muted);margin-top:6px}
+.hline{display:flex;align-items:center;gap:12px;margin:18px 0 0}
+.hline span{flex:1;height:1px;background:var(–border)}
+.hline i{font-style:normal;font-size:11px;color:var(–gold)}
+
+/* SECTION */
+.sec-block{margin-bottom:32px;border-radius:14px;overflow:hidden;border:1px solid var(–border);box-shadow:var(–shadow)}
+.sec-header{display:flex;align-items:center;gap:12px;padding:15px 18px;background:var(–char)}
+.sec-icon{font-size:1.3rem;flex-shrink:0}
+.sec-name{font-family:‘Cormorant Garamond’,serif;font-size:1.45rem;font-weight:600;color:#fff;line-height:1.1}
+.sec-sub{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.5);margin-top:2px}
+
+/* SUBCAT */
+.subcat-label{font-size:10px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(–gold);padding:11px 18px 5px;background:var(–gold-bg);border-top:1px solid #ede5d5;border-bottom:1px solid #ede5d5}
+
+/* ITEM */
+.menu-item{display:flex;align-items:flex-start;gap:10px;padding:12px 18px;border-bottom:1px solid var(–border);background:#fff;transition:background .15s}
+.menu-item:last-child{border-bottom:none}
+.menu-item.unavail{opacity:.4;background:#fafafa}
+.mi-left{flex:1;min-width:0}
+.mi-name{font-size:15px;font-weight:500;line-height:1.3;color:var(–char)}
+.mi-unavail{font-size:11px;color:var(–muted);font-weight:400;margin-left:5px}
+.mi-desc{font-size:12px;color:var(–mid);margin-top:3px;line-height:1.4;font-style:italic}
+.mi-allerg{font-size:11px;color:var(–muted);margin-top:3px;line-height:1.4}
+.mi-price{font-size:15px;font-weight:700;color:var(–rust);white-space:nowrap;flex-shrink:0;padding-top:1px}
+
+/* FOOTER */
+.menu-footer{text-align:center;margin-top:36px;padding-top:20px;border-top:1px solid var(–border);font-size:12px;letter-spacing:.15em;text-transform:uppercase;color:var(–muted)}
+
+/* ════════════════════════════════════════════
+FABS
+════════════════════════════════════════════ */
+.fabs{position:fixed;bottom:20px;right:16px;z-index:400;display:flex;flex-direction:column;gap:8px}
+.fab{border-radius:24px;padding:11px 16px;font-size:13px;font-weight:600;cursor:pointer;border:none;white-space:nowrap;box-shadow:0 3px 12px rgba(0,0,0,.18);letter-spacing:.04em}
+.fab-admin{background:var(–char);color:var(–gold)}
+.fab-qr{background:#fff;color:var(–char);border:1px solid var(–border)}
+
+/* ════════════════════════════════════════════
+ADMIN PANEL
+════════════════════════════════════════════ */
+#adminPanel{display:none;position:fixed;inset:0;z-index:800;background:#f2efe9;overflow-y:auto;padding-bottom:80px}
+#adminPanel.open{display:block}
+
+.ap-topbar{position:sticky;top:0;z-index:10;background:#1a1a1a;padding:0 16px;display:flex;align-items:center;gap:8px;height:56px;border-bottom:3px solid var(–gold)}
+.ap-title{font-family:‘Cormorant Garamond’,serif;font-size:1.2rem;font-weight:600;color:var(–gold);flex:1}
+.ap-saved-msg{font-size:11px;color:var(–gold);opacity:0;transition:opacity .3s;white-space:nowrap}
+.ap-saved-msg.show{opacity:1}
+.ap-topbtn{border:none;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:600;cursor:pointer;letter-spacing:.04em}
+.ap-topbtn-gold{background:var(–gold);color:#fff}
+.ap-topbtn-white{background:rgba(255,255,255,.12);color:#fff}
+
+/* section tabs */
+.ap-tabs{display:flex;gap:6px;padding:12px 14px;overflow-x:auto;background:#fff;border-bottom:1px solid var(–border);-webkit-overflow-scrolling:touch}
+.ap-tabs::-webkit-scrollbar{display:none}
+.ap-tab{border:1px solid var(–border);border-radius:20px;padding:7px 13px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;background:#fff;color:var(–muted);transition:all .2s;flex-shrink:0;letter-spacing:.04em}
+.ap-tab.active{background:var(–char);color:var(–gold);border-color:var(–char)}
+
+/* section body */
+.ap-body{padding:14px 14px}
+
+/* add btn */
+.ap-add-btn{width:100%;border:2px dashed var(–gold);background:var(–gold-bg);color:var(–gold);border-radius:10px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:12px;letter-spacing:.04em;transition:all .2s}
+.ap-add-btn:active{opacity:.7}
+
+/* subcat in admin */
+.ap-subcat-lbl{font-size:10px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(–gold);padding:8px 2px 3px}
+
+/* item card */
+.ap-card{background:#fff;border-radius:10px;border:1px solid var(–border);margin-bottom:8px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.ap-card-head{display:flex;align-items:center;gap:8px;padding:11px 12px;cursor:pointer;user-select:none}
+.ap-card-head:active{background:#fffbf2}
+.ap-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.ap-dot.on{background:var(–green)}
+.ap-dot.off{background:#ccc}
+.ap-card-info{flex:1;min-width:0}
+.ap-card-name{font-size:14px;font-weight:600;color:var(–char);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ap-card-meta{font-size:11px;color:var(–muted);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ap-card-price{font-size:14px;font-weight:700;color:var(–rust);white-space:nowrap;margin-right:4px;flex-shrink:0}
+.ap-ord-col{display:flex;flex-direction:column;gap:2px;flex-shrink:0}
+.ap-ord{background:#f2efe9;border:none;border-radius:5px;width:28px;height:22px;font-size:12px;cursor:pointer;color:#666;display:flex;align-items:center;justify-content:center;font-weight:700}
+.ap-ord:active{background:var(–border)}
+.ap-ord:disabled{opacity:.2;cursor:default}
+.ap-chevron{font-size:14px;color:#bbb;transition:transform .2s;flex-shrink:0}
+.ap-card.open .ap-chevron{transform:rotate(90deg)}
+
+/* item form */
+.ap-form{display:none;padding:0 12px 14px;border-top:1px solid #f0ebe3}
+.ap-card.open .ap-form{display:block}
+.ap-row{display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid #f5f0e8}
+.ap-row span{font-size:14px;font-weight:500}
+.ap-tog{width:46px;height:26px;background:#ddd;border-radius:13px;position:relative;cursor:pointer;border:none;transition:background .25s;flex-shrink:0}
+.ap-tog.on{background:var(–green)}
+.ap-tog::after{content:’’;position:absolute;left:3px;top:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:left .25s;box-shadow:0 1px 4px rgba(0,0,0,.2)}
+.ap-tog.on::after{left:23px}
+.ap-f{margin-top:10px}
+.ap-f label{display:block;font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(–muted);margin-bottom:4px}
+.ap-f input,.ap-f textarea,.ap-f select{width:100%;border:1.5px solid var(–border);border-radius:8px;padding:10px 12px;font-size:14px;color:var(–char);background:#fff;transition:border-color .2s}
+.ap-f input:focus,.ap-f textarea:focus{outline:none;border-color:var(–gold)}
+.ap-f textarea{resize:vertical;min-height:54px}
+.ap-actions{display:flex;gap:8px;margin-top:12px}
+.ap-save{flex:1;background:var(–char);color:#fff;border:none;border-radius:8px;padding:12px;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s}
+.ap-save:active{background:#333}
+.ap-save.ok{background:var(–green)}
+.ap-del{background:#fff3f3;color:var(–red);border:1px solid #fcc;border-radius:8px;padding:12px 14px;font-size:13px;font-weight:500;cursor:pointer}
+
+/* ════════════════════════════════════════════
+OVERLAYS (PW + QR)
+════════════════════════════════════════════ */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:600;align-items:center;justify-content:center;padding:20px}
+.overlay.open{display:flex}
+
+/* pw modal */
+.pw-box{background:#fff;border-radius:16px;width:100%;max-width:360px;padding:28px 24px;position:relative}
+.pw-box h2{font-family:‘Cormorant Garamond’,serif;font-size:1.5rem;font-weight:600;margin-bottom:4px}
+.pw-box p{font-size:13px;color:var(–muted);margin-bottom:18px}
+.pw-err{font-size:12px;color:var(–red);margin-top:6px;min-height:18px}
+.inp{width:100%;border:1.5px solid var(–border);border-radius:8px;padding:12px 14px;font-size:15px;color:var(–char);background:#fff;transition:border-color .2s}
+.inp:focus{outline:none;border-color:var(–gold)}
+.btn-row{display:flex;gap:8px;margin-top:14px}
+.btn-dark{flex:1;background:var(–char);color:#fff;border:none;border-radius:8px;padding:13px;font-size:14px;font-weight:600;cursor:pointer}
+.btn-ghost{background:#f5f0e8;color:var(–mid);border:none;border-radius:8px;padding:13px 18px;font-size:14px;cursor:pointer}
+.modal-x{position:absolute;top:14px;right:14px;background:#f5f0e8;border:none;border-radius:50%;width:30px;height:30px;font-size:15px;color:var(–muted);cursor:pointer;display:flex;align-items:center;justify-content:center}
+
+/* qr modal */
+.qr-box{background:#fff;border-radius:16px;width:100%;max-width:340px;padding:28px 22px;text-align:center;position:relative}
+.qr-box h2{font-family:‘Cormorant Garamond’,serif;font-size:1.4rem;font-weight:600;margin-bottom:4px}
+.qr-box p{font-size:12px;color:var(–muted);letter-spacing:.12em;text-transform:uppercase;margin-bottom:16px}
+.qr-wrap{display:inline-block;padding:14px;background:#fff;border:1px solid var(–border);border-radius:8px;margin-bottom:14px}
+
+/* ════════════════════════════════════════════
+TOAST
+════════════════════════════════════════════ */
+#toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#1a1a1a;color:#fff;padding:10px 20px;border-radius:24px;font-size:13px;font-weight:500;z-index:900;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
+#toast.show{opacity:1}
+</style>
+
+</head>
+<body>
+
+<!-- LOADING -->
+
+<div id="loadScreen">
+  <div class="load-logo"><span class="load-letter">J</span></div>
+  <div class="load-text">Joana Come a Tapa</div>
+  <div class="load-bar"><div class="load-bar-inner"></div></div>
+</div>
+
+<!-- LANG -->
+
+<div class="lang-bar">
+  <button class="lang-btn active" onclick="setLang('pt')">PT</button>
+  <button class="lang-btn" onclick="setLang('en')">EN</button>
+  <button class="lang-btn" onclick="setLang('es')">ES</button>
+</div>
+
+<!-- MENU PAGE -->
+
+<div id="menuPage">
+  <header class="header">
+    <div class="logo-ring"><span class="logo-letter">J</span></div>
+    <div class="rest-name">Joana Come a Tapa</div>
+    <div class="rest-sub">Petiscaria · Alcochete</div>
+    <div class="hline"><span></span><i>✦</i><span></span></div>
+  </header>
+  <div id="menuRoot"></div>
+  <footer class="menu-footer">© Joana Come a Tapa · Alcochete · Portugal</footer>
+</div>
+
+<!-- FABS -->
+
+<div class="fabs" id="fabs">
+  <button class="fab fab-admin" onclick="openPw()">⚙ Gestão</button>
+  <button class="fab fab-qr" onclick="openQR()">◻ QR Code</button>
+</div>
+
+<!-- ADMIN PANEL -->
+
+<div id="adminPanel">
+  <div class="ap-topbar">
+    <div class="ap-title">⚙ Gestão do Menu</div>
+    <span class="ap-saved-msg" id="apSavedMsg">✓ Guardado</span>
+    <button class="ap-topbtn ap-topbtn-white" onclick="apClose()">✕ Fechar</button>
+  </div>
+  <div class="ap-tabs" id="apTabs"></div>
+  <div id="apBody"></div>
+</div>
+
+<!-- PW OVERLAY -->
+
+<div class="overlay" id="pwOverlay">
+  <div class="pw-box">
+    <button class="modal-x" onclick="closeOv('pwOverlay')">✕</button>
+    <h2>Área Admin</h2>
+    <p>Introduz a password para gerir o menu</p>
+    <input class="inp" type="password" id="pwInput" placeholder="Password" onkeydown="if(event.key==='Enter')checkPw()">
+    <div class="pw-err" id="pwErr"></div>
+    <div class="btn-row">
+      <button class="btn-dark" onclick="checkPw()">Entrar</button>
+      <button class="btn-ghost" onclick="closeOv('pwOverlay')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- QR OVERLAY -->
+
+<div class="overlay" id="qrOverlay">
+  <div class="qr-box">
+    <button class="modal-x" onclick="closeOv('qrOverlay')">✕</button>
+    <h2>QR Code</h2>
+    <p>Partilhar menu</p>
+    <input class="inp" type="text" id="qrUrl" placeholder="https://..." oninput="buildQR()" style="margin-bottom:14px">
+    <div class="qr-wrap"><div id="qrCanvas"></div></div>
+    <div class="btn-row" style="justify-content:center">
+      <button class="btn-dark" onclick="dlQR()">⬇ Download PNG</button>
+      <button class="btn-ghost" onclick="closeOv('qrOverlay')">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+
+<div id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════════════════
+//  CONFIG
+// ══════════════════════════════════════════════════════════
+const SUPA_URL = 'https://vnquowcaogkbsfmhgzft.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZucXVvd2Nhb2drYnNmbWhnemZ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzczNjgwMzEsImV4cCI6MjA5Mjk0NDAzMX0.Yzof1CObcYLWN6s0ZtUw0uC0TUZv8D0T9CK4Zcze5dA';
+const ADMIN_PW = 'joana2024';
+
+const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
+
+// ══════════════════════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════════════════════
+let lang = localStorage.getItem('jcat_lang') || 'pt';
+let sections = [];
+let items = [];
+let apTab = 0;
+let dbReady = false;
+
+// ══════════════════════════════════════════════════════════
+//  SEED DATA (runs once if DB is empty)
+// ══════════════════════════════════════════════════════════
+const SEED_SECTIONS = [
+  {id:'s1',icon:'🎉',name_pt:'Começa a Festa',name_en:"Let's Start",name_es:'¡Empieza la Fiesta!',sub_pt:'Pães · couvert · entradas',sub_en:'Breads · couvert · starters',sub_es:'Panes · couvert · entrantes',sort_order:1},
+  {id:'s2',icon:'🌊',name_pt:'Tapas do Mar',name_en:'From the Sea',name_es:'Del Mar',sub_pt:'Peixe · marisco · moluscos',sub_en:'Fish · seafood · molluscs',sub_es:'Pescado · marisco · moluscos',sort_order:2},
+  {id:'s3',icon:'🥩',name_pt:'Tapas da Terra',name_en:'From the Land',name_es:'De la Tierra',sub_pt:'Carnes · caça · enchidos',sub_en:'Meats · game · charcuterie',sub_es:'Carnes · caza · embutidos',sort_order:3},
+  {id:'s4',icon:'🌱',name_pt:'Horta · Queijos · Ovos',name_en:'Garden · Cheese · Eggs',name_es:'Huerta · Quesos · Huevos',sub_pt:'Vegetariano · queijo · ovos rotos',sub_en:'Vegetarian · cheese · broken eggs',sub_es:'Vegetariano · queso · huevos rotos',sort_order:4},
+  {id:'s5',icon:'🍽️',name_pt:'Pratos & Pastéis',name_en:'Mains & Pastels',name_es:'Platos & Pasteles',sub_pt:'Borrachos · pratos · chef manda · pregos',sub_en:"Pastels · mains · chef's choice",sub_es:'Pasteles · platos · chef',sort_order:5},
+  {id:'s6',icon:'🍮',name_pt:'Doces',name_en:'Desserts',name_es:'Postres',sub_pt:'Para adoçar o final',sub_en:'Sweet endings',sub_es:'Para endulzar el final',sort_order:6},
+  {id:'s7',icon:'🍷',name_pt:'Carta de Vinhos',name_en:'Wine List',name_es:'Carta de Vinos',sub_pt:'Tintos · brancos · rosés · espumantes',sub_en:'Reds · whites · rosés · sparkling',sub_es:'Tintos · blancos · rosados · espumosos',sort_order:7},
+  {id:'s8',icon:'🍸',name_pt:'Bar',name_en:'Bar',name_es:'Bar',sub_pt:'Café · cervejas · gins · cocktails · sangrias · whisky',sub_en:'Coffee · beers · gins · cocktails · sangrias · whisky',sub_es:'Café · cervezas · gins · cócteles · sangrias · whisky',sort_order:8},
+];
+
+const SEED_ITEMS = [
+  // s1 - Começa a Festa
+  {id:'i1',section_id:'s1',subcat:'Couvert',name:'Couvert',desc_pt:'Frutos secos · tremoço · pão · manteiga',desc_en:'Nuts · lupins · bread · butter',desc_es:'Frutos secos · altramuces · pan · mantequilla',price:'6€',allergens:'Frutos secos · Tremoço · Glúten · Leite · Ovos',avail:true,sort_order:1},
+  {id:'i2',section_id:'s1',subcat:'Couvert',name:'Couvert XL + água',desc_pt:'Versão completa com água incluída',desc_en:'Full version with water included',desc_es:'Versión completa con agua incluida',price:'8€',allergens:'Leite · Ovos · Frutos secos · Tremoço · Glúten',avail:true,sort_order:2},
+  {id:'i3',section_id:'s1',subcat:'Pães & Extras',name:'Bolo caco alho',desc_pt:'',desc_en:'',desc_es:'',price:'3,5€',allergens:'Glúten · Leite · Aipo',avail:true,sort_order:3},
+  {id:'i4',section_id:'s1',subcat:'Pães & Extras',name:'Cesto pão',desc_pt:'',desc_en:'',desc_es:'',price:'2,8€',allergens:'Glúten',avail:true,sort_order:4},
+  {id:'i5',section_id:'s1',subcat:'Pães & Extras',name:'Pão sem glúten',desc_pt:'',desc_en:'',desc_es:'',price:'2,8€',allergens:'',avail:true,sort_order:5},
+  {id:'i6',section_id:'s1',subcat:'Pães & Extras',name:'Broa',desc_pt:'',desc_en:'',desc_es:'',price:'2,5€',allergens:'Glúten · Frutos secos',avail:true,sort_order:6},
+  {id:'i7',section_id:'s1',subcat:'Pães & Extras',name:'Tremoços + azeitonas',desc_pt:'',desc_en:'',desc_es:'',price:'2,5€',allergens:'Tremoço',avail:true,sort_order:7},
+  {id:'i8',section_id:'s1',subcat:'Pães & Extras',name:'Tostas',desc_pt:'',desc_en:'',desc_es:'',price:'3,4€',allergens:'Glúten',avail:true,sort_order:8},
+  {id:'i9',section_id:'s1',subcat:'Pães & Extras',name:'Manteiga alho',desc_pt:'Coentros',desc_en:'Coriander',desc_es:'Cilantro',price:'2,5€',allergens:'Leite · Aipo',avail:true,sort_order:9},
+  {id:'i10',section_id:'s1',subcat:'Pães & Extras',name:'Paté mar',desc_pt:'',desc_en:'',desc_es:'',price:'2,6€',allergens:'Peixe · Ovos · Leite · Glúten',avail:true,sort_order:10},
+  {id:'i11',section_id:'s1',subcat:'Acompanhamentos',name:'Arroz branco',desc_pt:'',desc_en:'',desc_es:'',price:'3€',allergens:'',avail:true,sort_order:11},
+  {id:'i12',section_id:'s1',subcat:'Acompanhamentos',name:'Arroz coentros',desc_pt:'',desc_en:'',desc_es:'',price:'4,5€',allergens:'Aipo',avail:true,sort_order:12},
+  {id:'i13',section_id:'s1',subcat:'Acompanhamentos',name:'Batata frita',desc_pt:'',desc_en:'',desc_es:'',price:'3€',allergens:'Pode conter Glúten',avail:true,sort_order:13},
+  {id:'i14',section_id:'s1',subcat:'Acompanhamentos',name:'Batata doce frita',desc_pt:'',desc_en:'',desc_es:'',price:'3,5€',allergens:'Pode conter Glúten',avail:true,sort_order:14},
+  {id:'i15',section_id:'s1',subcat:'Acompanhamentos',name:'Salada',desc_pt:'',desc_en:'',desc_es:'',price:'3€ / 5€',allergens:'Aipo · Mostarda',avail:true,sort_order:15},
+  {id:'i16',section_id:'s1',subcat:'Acompanhamentos',name:'Salada uvas + cherry',desc_pt:'',desc_en:'',desc_es:'',price:'5€',allergens:'Aipo · Mostarda',avail:true,sort_order:16},
+  // s2 - Mar
+  {id:'i20',section_id:'s2',subcat:'',name:'Pica-pau atum',desc_pt:'',desc_en:'',desc_es:'',price:'18,3€',allergens:'Peixe · Aipo · Mostarda · Dióxido de enxofre',avail:true,sort_order:1},
+  {id:'i21',section_id:'s2',subcat:'',name:'Camarão crocante (4u)',desc_pt:'',desc_en:'',desc_es:'',price:'11,4€',allergens:'Crustáceos · Ovos · Mostarda · Glúten · Leite',avail:true,sort_order:2},
+  {id:'i22',section_id:'s2',subcat:'',name:'Camarão piri-piri',desc_pt:'',desc_en:'',desc_es:'',price:'14,7€',allergens:'Crustáceos · Aipo · Dióxido de enxofre',avail:true,sort_order:3},
+  {id:'i23',section_id:'s2',subcat:'',name:'Camarão alhinho',desc_pt:'',desc_en:'',desc_es:'',price:'14,7€',allergens:'Crustáceos · Aipo · Dióxido de enxofre',avail:true,sort_order:4},
+  {id:'i24',section_id:'s2',subcat:'',name:'Ameijoas Bulhão Pato',desc_pt:'',desc_en:'',desc_es:'',price:'22€',allergens:'Moluscos · Dióxido de enxofre',avail:false,sort_order:5},
+  {id:'i25',section_id:'s2',subcat:'',name:'Ostras naturais',desc_pt:'',desc_en:'',desc_es:'',price:'15€',allergens:'Moluscos',avail:false,sort_order:6},
+  {id:'i26',section_id:'s2',subcat:'',name:'Mexilhão vinagrete',desc_pt:'',desc_en:'',desc_es:'',price:'12,4€',allergens:'Moluscos · Mostarda · Aipo · Dióxido de enxofre',avail:true,sort_order:7},
+  {id:'i27',section_id:'s2',subcat:'',name:'Tempura polvo',desc_pt:'',desc_en:'',desc_es:'',price:'16,3€',allergens:'Moluscos · Glúten · Ovos · Sésamo',avail:true,sort_order:8},
+  {id:'i28',section_id:'s2',subcat:'',name:'Pataniscas polvo',desc_pt:'',desc_en:'',desc_es:'',price:'12,4€',allergens:'Moluscos · Ovos · Aipo · Glúten · Leite',avail:true,sort_order:9},
+  {id:'i29',section_id:'s2',subcat:'',name:'Tiras pota caril',desc_pt:'',desc_en:'',desc_es:'',price:'12€',allergens:'Moluscos · Glúten · Ovos · Aipo · Mostarda',avail:true,sort_order:10},
+  {id:'i30',section_id:'s2',subcat:'',name:'Vieiras lima',desc_pt:'',desc_en:'',desc_es:'',price:'20€',allergens:'Moluscos · Leite · Dióxido de enxofre',avail:false,sort_order:11},
+  // s3 - Terra
+  {id:'i40',section_id:'s3',subcat:'',name:'Brigadeiros alheira',desc_pt:'',desc_en:'',desc_es:'',price:'9€',allergens:'Glúten · Ovos · Leite · Aipo · Frutos secos · Mostarda',avail:true,sort_order:1},
+  {id:'i41',section_id:'s3',subcat:'',name:'Pica-pau Joana',desc_pt:'',desc_en:'',desc_es:'',price:'16,4€',allergens:'Mostarda · Aipo · Dióxido de enxofre',avail:true,sort_order:2},
+  {id:'i42',section_id:'s3',subcat:'',name:'Rebuçados faisão',desc_pt:'',desc_en:'',desc_es:'',price:'9,4€',allergens:'Glúten · Ovos · Leite · Mostarda · Aipo',avail:true,sort_order:3},
+  {id:'i43',section_id:'s3',subcat:'',name:'Perdiz escabeche',desc_pt:'',desc_en:'',desc_es:'',price:'22,5€',allergens:'Glúten · Mostarda · Aipo · Dióxido de enxofre',avail:false,sort_order:4},
+  {id:'i44',section_id:'s3',subcat:'',name:'Perdiz Porto',desc_pt:'',desc_en:'',desc_es:'',price:'22€',allergens:'Dióxido de enxofre · Aipo',avail:false,sort_order:5},
+  {id:'i45',section_id:'s3',subcat:'',name:'Bochecha porco preto',desc_pt:'Porco · vinho tinto',desc_en:'Pork · red wine',desc_es:'Cerdo · vino tinto',price:'18€',allergens:'Dióxido de enxofre · Aipo · Mostarda',avail:true,sort_order:6},
+  // s4 - Horta
+  {id:'i50',section_id:'s4',subcat:'Da Horta',name:'Casquinhas batata caril',desc_pt:'',desc_en:'',desc_es:'',price:'4,4€',allergens:'Mostarda · Aipo · Leite',avail:true,sort_order:1},
+  {id:'i51',section_id:'s4',subcat:'Da Horta',name:'Cogumelos selvagens',desc_pt:'',desc_en:'',desc_es:'',price:'9,8€',allergens:'Dióxido de enxofre · Aipo',avail:true,sort_order:2},
+  {id:'i52',section_id:'s4',subcat:'Da Horta',name:'Pimentos padrón',desc_pt:'',desc_en:'',desc_es:'',price:'7,7€',allergens:'Pode conter Glúten',avail:true,sort_order:3},
+  {id:'i53',section_id:'s4',subcat:'Da Horta',name:'Peixinhos da horta',desc_pt:'Feijão verde em tempura',desc_en:'Tempura green beans',desc_es:'Judías verdes en tempura',price:'9,8€',allergens:'Glúten · Ovos · Sésamo',avail:true,sort_order:4},
+  {id:'i54',section_id:'s4',subcat:'Queijos',name:'Queijo assado oregãos',desc_pt:'',desc_en:'',desc_es:'',price:'8,4€',allergens:'Leite · Glúten',avail:true,sort_order:5},
+  {id:'i55',section_id:'s4',subcat:'Queijos',name:'Tortilha cabra + mel',desc_pt:'',desc_en:'',desc_es:'',price:'8,5€',allergens:'Leite · Ovos · Glúten',avail:true,sort_order:6},
+  {id:'i56',section_id:'s4',subcat:'Ovos Rotos',name:'Presunto + pimentos',desc_pt:'',desc_en:'',desc_es:'',price:'14,5€',allergens:'Ovos · Dióxido de enxofre',avail:true,sort_order:7},
+  {id:'i57',section_id:'s4',subcat:'Ovos Rotos',name:'Cogumelos',desc_pt:'',desc_en:'',desc_es:'',price:'13,5€',allergens:'Ovos · Aipo · Dióxido de enxofre',avail:true,sort_order:8},
+  {id:'i58',section_id:'s4',subcat:'Ovos Rotos',name:'Calientes camarão',desc_pt:'',desc_en:'',desc_es:'',price:'18€',allergens:'Ovos · Crustáceos · Leite · Dióxido de enxofre',avail:true,sort_order:9},
+  {id:'i59',section_id:'s4',subcat:'Ovos Rotos',name:'Salmão fumado',desc_pt:'',desc_en:'',desc_es:'',price:'16,5€',allergens:'Peixe · Ovos · Dióxido de enxofre',avail:false,sort_order:10},
+  {id:'i60',section_id:'s4',subcat:'Ovos Rotos',name:'Bacalhau',desc_pt:'',desc_en:'',desc_es:'',price:'18€',allergens:'Peixe · Ovos · Dióxido de enxofre',avail:false,sort_order:11},
+  // s5 - Pratos
+  {id:'i70',section_id:'s5',subcat:'Borrachos',name:'Portuguesa',desc_pt:'',desc_en:'',desc_es:'',price:'6,6€',allergens:'Glúten · Ovos · Leite · Mostarda',avail:true,sort_order:1},
+  {id:'i71',section_id:'s5',subcat:'Borrachos',name:'Mozzarella oregão',desc_pt:'',desc_en:'',desc_es:'',price:'5,8€',allergens:'Glúten · Leite · Ovos',avail:true,sort_order:2},
+  {id:'i72',section_id:'s5',subcat:'Borrachos',name:'Misto',desc_pt:'',desc_en:'',desc_es:'',price:'6,4€',allergens:'Glúten · Ovos · Leite · Mostarda',avail:true,sort_order:3},
+  {id:'i73',section_id:'s5',subcat:'No Prato',name:'Bochechas porco preto',desc_pt:'',desc_en:'',desc_es:'',price:'28€',allergens:'Dióxido de enxofre · Aipo · Mostarda',avail:true,sort_order:4},
+  {id:'i74',section_id:'s5',subcat:'No Prato',name:'Caril camarão',desc_pt:'',desc_en:'',desc_es:'',price:'22€',allergens:'Crustáceos · Leite · Mostarda · Aipo',avail:false,sort_order:5},
+  {id:'i75',section_id:'s5',subcat:'No Prato',name:'Magret de pato',desc_pt:'',desc_en:'',desc_es:'',price:'32€',allergens:'Dióxido de enxofre · Aipo',avail:true,sort_order:6},
+  {id:'i76',section_id:'s5',subcat:'No Prato',name:'Entrecote 350g',desc_pt:'',desc_en:'',desc_es:'',price:'37€',allergens:'Mostarda · Dióxido de enxofre',avail:true,sort_order:7},
+  {id:'i77',section_id:'s5',subcat:'No Prato',name:'Bitoque Black Tiger',desc_pt:'',desc_en:'',desc_es:'',price:'38€',allergens:'Ovos · Mostarda · Crustáceos · Dióxido de enxofre',avail:true,sort_order:8},
+  {id:'i78',section_id:'s5',subcat:'A Chef Manda',name:'Ovos rotos calientes',desc_pt:'Já disponível!',desc_en:'Ready now!',desc_es:'¡Ya!',price:'18€',allergens:'Ovos · Crustáceos · Leite',avail:true,sort_order:9},
+  {id:'i79',section_id:'s5',subcat:'A Chef Manda',name:'Magret pato',desc_pt:'45 min',desc_en:'45 min',desc_es:'45 min',price:'32€',allergens:'Dióxido de enxofre · Aipo',avail:true,sort_order:10},
+  {id:'i80',section_id:'s5',subcat:'A Chef Manda',name:'Bochechas porco prato',desc_pt:'Já disponível!',desc_en:'Ready now!',desc_es:'¡Ya!',price:'30€',allergens:'Dióxido de enxofre · Aipo · Mostarda',avail:true,sort_order:11},
+  {id:'i81',section_id:'s5',subcat:'A Chef Manda',name:'Entrecote 400g',desc_pt:'50 min',desc_en:'50 min',desc_es:'50 min',price:'37€',allergens:'Mostarda · Dióxido de enxofre',avail:true,sort_order:12},
+  {id:'i82',section_id:'s5',subcat:'A Chef Manda',name:'Bitoque Black Tiger',desc_pt:'45 min',desc_en:'45 min',desc_es:'45 min',price:'38€',allergens:'Ovos · Mostarda · Crustáceos · Dióxido de enxofre',avail:true,sort_order:13},
+  {id:'i83',section_id:'s5',subcat:'Pregos Bolo do Caco',name:'Lombo maturado',desc_pt:'',desc_en:'',desc_es:'',price:'18,2€',allergens:'Glúten · Leite · Mostarda · Dióxido de enxofre',avail:true,sort_order:14},
+  {id:'i84',section_id:'s5',subcat:'Pregos Bolo do Caco',name:'Salmão',desc_pt:'',desc_en:'',desc_es:'',price:'18€',allergens:'Peixe · Glúten · Leite · Dióxido de enxofre',avail:false,sort_order:15},
+  {id:'i85',section_id:'s5',subcat:'Pregos Bolo do Caco',name:'Legumes',desc_pt:'',desc_en:'',desc_es:'',price:'15,2€',allergens:'Glúten · Leite · Aipo',avail:true,sort_order:16},
+  {id:'i86',section_id:'s5',subcat:'Pregos Bolo do Caco',name:'Atum',desc_pt:'',desc_en:'',desc_es:'',price:'17,2€',allergens:'Peixe · Glúten · Leite · Mostarda',avail:true,sort_order:17},
+  {id:'i87',section_id:'s5',subcat:'Pregos Bolo do Caco',name:'Mini pregos lombo (2u)',desc_pt:'',desc_en:'',desc_es:'',price:'18,2€',allergens:'Glúten · Leite · Mostarda · Dióxido de enxofre',avail:true,sort_order:18},
+  {id:'i88',section_id:'s5',subcat:'Miúdos',name:'Mini hambúrgueres',desc_pt:'',desc_en:'',desc_es:'',price:'15€',allergens:'Glúten · Ovos · Leite · Mostarda',avail:true,sort_order:19},
+  {id:'i89',section_id:'s5',subcat:'Miúdos',name:'Crocantes frango',desc_pt:'',desc_en:'',desc_es:'',price:'15€',allergens:'Glúten · Ovos · Mostarda',avail:true,sort_order:20},
+  {id:'i90',section_id:'s5',subcat:'Marisco (encomenda)',name:'Arroz lingueirão',desc_pt:'Encomenda antecipada',desc_en:'Pre-order required',desc_es:'Pedido previo',price:'48€',allergens:'Moluscos · Aipo · Dióxido de enxofre',avail:true,sort_order:21},
+  // s6 - Doces
+  {id:'i100',section_id:'s6',subcat:'',name:'Tarte caramelo + amendoim',desc_pt:'',desc_en:'',desc_es:'',price:'5€',allergens:'Glúten · Leite · Ovos · Frutos secos',avail:true,sort_order:1},
+  {id:'i101',section_id:'s6',subcat:'',name:'Bolo chocolate + gelado',desc_pt:'',desc_en:'',desc_es:'',price:'5€',allergens:'Glúten · Ovos · Leite · Soja',avail:true,sort_order:2},
+  {id:'i102',section_id:'s6',subcat:'',name:'Abacaxi lima',desc_pt:'',desc_en:'',desc_es:'',price:'4,9€',allergens:'',avail:true,sort_order:3},
+  {id:'i103',section_id:'s6',subcat:'',name:'Tarte lima / limão',desc_pt:'',desc_en:'',desc_es:'',price:'4,9€',allergens:'Glúten · Ovos · Leite',avail:true,sort_order:4},
+  {id:'i104',section_id:'s6',subcat:'',name:'Gelado (1 / 2 bolas)',desc_pt:'',desc_en:'',desc_es:'',price:'4€ / 7€',allergens:'Leite · Ovos · Pode conter Frutos secos',avail:true,sort_order:5},
+  {id:'i105',section_id:'s6',subcat:'',name:'Farófias leite-crème',desc_pt:'',desc_en:'',desc_es:'',price:'4,9€',allergens:'Leite · Ovos',avail:true,sort_order:6},
+  {id:'i106',section_id:'s6',subcat:'',name:'Mini pavlova',desc_pt:'',desc_en:'',desc_es:'',price:'4,6€',allergens:'Ovos · Leite',avail:true,sort_order:7},
+  {id:'i107',section_id:'s6',subcat:'',name:'Mousse chocolate',desc_pt:'',desc_en:'',desc_es:'',price:'4,4€',allergens:'Ovos · Leite · Soja',avail:true,sort_order:8},
+  // s7 - Vinhos (sample)
+  {id:'w1',section_id:'s7',subcat:'Tintos a Copo',name:'Piano Grande Reserva 2019 — Douro',desc_pt:'Grande Formato 5L',desc_en:'Large Format 5L',desc_es:'Gran Formato 5L',price:'7€',allergens:'Dióxido de enxofre',avail:true,sort_order:1},
+  {id:'w2',section_id:'s7',subcat:'Tintos a Copo',name:'Qta Sobreiro Reserva — Trás-os-Montes',desc_pt:'Touriga Nacional · Trincadeira · Bastardo',desc_en:'Touriga Nacional · Trincadeira · Bastardo',desc_es:'Touriga Nacional · Trincadeira · Bastardo',price:'6€',allergens:'Dióxido de enxofre',avail:true,sort_order:2},
+  {id:'w3',section_id:'s7',subcat:'Tintos a Copo',name:'H. Sobroso Reserva — Alentejo',desc_pt:'',desc_en:'',desc_es:'',price:'6,5€',allergens:'Dióxido de enxofre',avail:true,sort_order:3},
+  {id:'w6',section_id:'s7',subcat:'Tintos Garrafa',name:'Taboadella Villae — Dão',desc_pt:'Garrafa · 6€ copo',desc_en:'Bottle · 6€ glass',desc_es:'Botella · 6€ copa',price:'23€',allergens:'Dióxido de enxofre',avail:true,sort_order:4},
+  {id:'w8',section_id:'s7',subcat:'Tintos Garrafa',name:'Terroir Blend Qta Nova — Douro',desc_pt:'Garrafa · 8€ copo',desc_en:'Bottle · 8€ glass',desc_es:'Botella · 8€ copa',price:'29€',allergens:'Dióxido de enxofre',avail:true,sort_order:5},
+  {id:'w34',section_id:'s7',subcat:'Tintos Premium',name:'Quinta do Vale Meão 2017 — Douro',desc_pt:'',desc_en:'',desc_es:'',price:'300€',allergens:'Dióxido de enxofre',avail:true,sort_order:6},
+  {id:'w42',section_id:'s7',subcat:'Brancos a Copo',name:'Qta das Camélias Encruzado — Dão',desc_pt:'',desc_en:'',desc_es:'',price:'6€',allergens:'Dióxido de enxofre',avail:true,sort_order:7},
+  {id:'w48',section_id:'s7',subcat:'Brancos Garrafa',name:'Encruzado Taboadella — Dão',desc_pt:'Garrafa · 7€ copo',desc_en:'Bottle · 7€ glass',desc_es:'Botella · 7€ copa',price:'26€',allergens:'Dióxido de enxofre',avail:true,sort_order:8},
+  {id:'w58',section_id:'s7',subcat:'Rosés',name:'Qta Nova Rosé — Douro',desc_pt:'Garrafa · 6,5€ copo',desc_en:'Bottle · 6,5€ glass',desc_es:'Botella · 6,5€ copa',price:'24€',allergens:'Dióxido de enxofre',avail:true,sort_order:9},
+  {id:'w60',section_id:'s7',subcat:'Espumantes & Champagne',name:'Mingorra Brut',desc_pt:'',desc_en:'',desc_es:'',price:'26€',allergens:'Dióxido de enxofre',avail:true,sort_order:10},
+  {id:'w62',section_id:'s7',subcat:'Espumantes & Champagne',name:'Pommery Apanage — Champagne',desc_pt:'',desc_en:'',desc_es:'',price:'75€',allergens:'Dióxido de enxofre',avail:true,sort_order:11},
+  // s8 - Bar (sample)
+  {id:'b1',section_id:'s8',subcat:'Cafetaria',name:'Expresso',desc_pt:'',desc_en:'',desc_es:'',price:'1,2€',allergens:'',avail:true,sort_order:1},
+  {id:'b2',section_id:'s8',subcat:'Cafetaria',name:'Cappuccino',desc_pt:'',desc_en:'',desc_es:'',price:'2,5€',allergens:'Leite',avail:true,sort_order:2},
+  {id:'b7',section_id:'s8',subcat:'Águas',name:'Tap Water 0,50l',desc_pt:'',desc_en:'',desc_es:'',price:'1,8€',allergens:'',avail:true,sort_order:3},
+  {id:'b9',section_id:'s8',subcat:'Águas',name:'San Pellegrino 0,50l',desc_pt:'',desc_en:'',desc_es:'',price:'2,2€',allergens:'',avail:true,sort_order:4},
+  {id:'b12',section_id:'s8',subcat:'Refrigerantes',name:'Coca-Cola',desc_pt:'',desc_en:'',desc_es:'',price:'2,2€',allergens:'',avail:true,sort_order:5},
+  {id:'b26',section_id:'s8',subcat:'Pressão',name:'Heineken 0,25l',desc_pt:'',desc_en:'',desc_es:'',price:'2€',allergens:'Glúten',avail:true,sort_order:6},
+  {id:'b27',section_id:'s8',subcat:'Pressão',name:'Heineken 0,40l',desc_pt:'',desc_en:'',desc_es:'',price:'4,3€',allergens:'Glúten',avail:true,sort_order:7},
+  {id:'b45',section_id:'s8',subcat:'Gin & Tónica',name:"Hendrick's",desc_pt:'Pepino · Zimbro',desc_en:'Cucumber · Juniper',desc_es:'Pepino · Enebro',price:'9,2€',allergens:'',avail:true,sort_order:8},
+  {id:'b46',section_id:'s8',subcat:'Gin & Tónica',name:'Sharish',desc_pt:'Maçã · Zest de Laranja',desc_en:'Apple · Orange Zest',desc_es:'Manzana · Zest Naranja',price:'8,5€',allergens:'',avail:true,sort_order:9},
+  {id:'b57',section_id:'s8',subcat:'Cocktails',name:'Caipirinha Lima',desc_pt:'Leblon ou Velho Barreiro · Lima · Açúcar',desc_en:'Leblon or Velho Barreiro · Lime · Sugar',desc_es:'Leblon o Velho Barreiro · Lima · Azúcar',price:'7€',allergens:'',avail:true,sort_order:10},
+  {id:'b60',section_id:'s8',subcat:'Cocktails',name:'Aperol Spritz',desc_pt:'Espumante · Aperol · Água com gás · Laranja',desc_en:'Sparkling · Aperol · Sparkling water · Orange',desc_es:'Espumante · Aperol · Agua con gas · Naranja',price:'8€',allergens:'Dióxido de enxofre',avail:true,sort_order:11},
+  {id:'b61',section_id:'s8',subcat:'Cocktails',name:'Mojito Original',desc_pt:'Rum branco · Hortelã · Lima · Açúcar',desc_en:'White rum · Mint · Lime · Sugar',desc_es:'Ron blanco · Menta · Lima · Azúcar',price:'7€',allergens:'',avail:true,sort_order:12},
+  {id:'b66',section_id:'s8',subcat:'Sangrias',name:'Copo de Sangria',desc_pt:'Rosé · Branca · Tinta · 0,40cl',desc_en:'Rosé · White · Red · 0,40cl',desc_es:'Rosado · Blanco · Tinto · 0,40cl',price:'5,2€',allergens:'Dióxido de enxofre',avail:true,sort_order:13},
+  {id:'b78',section_id:'s8',subcat:'Whisky',name:"J&B",desc_pt:'',desc_en:'',desc_es:'',price:'5€',allergens:'',avail:true,sort_order:14},
+  {id:'b85',section_id:'s8',subcat:'Whisky',name:'Nikka Days',desc_pt:'',desc_en:'',desc_es:'',price:'6,5€',allergens:'',avail:true,sort_order:15},
+  {id:'b93',section_id:'s8',subcat:'Whisky',name:'Macallan 15 Anos',desc_pt:'',desc_en:'',desc_es:'',price:'40€',allergens:'',avail:true,sort_order:16},
+];
+
+// ══════════════════════════════════════════════════════════
+//  INIT & LOAD
+// ══════════════════════════════════════════════════════════
+async function init(){
+  try {
+    // Check if tables have data
+    const {data: secData, error: secErr} = await sb.from('menu_sections').select('id').limit(1);
+
+    if(secErr){
+      // Tables may not exist yet — show setup message
+      showToast('⚠️ Configura a base de dados primeiro', 5000);
+      loadFallback();
+      return;
+    }
+
+    if(!secData || secData.length === 0){
+      // Seed the database
+      showToast('A configurar base de dados...', 3000);
+      await seedDB();
+    }
+
+    await loadFromDB();
+    setupRealtime();
+
+  } catch(e) {
+    console.error(e);
+    loadFallback();
+  } finally {
+    setTimeout(()=>{
+      document.getElementById('loadScreen').classList.add('fade');
+      setTimeout(()=>document.getElementById('loadScreen').style.display='none', 400);
+    }, 1000);
+  }
+}
+
+async function seedDB(){
+  await sb.from('menu_sections').upsert(SEED_SECTIONS);
+  // Insert items in batches of 50
+  for(let i=0; i<SEED_ITEMS.length; i+=50){
+    await sb.from('menu_items').upsert(SEED_ITEMS.slice(i,i+50));
+  }
+}
+
+async function loadFromDB(){
+  const {data: secs} = await sb.from('menu_sections').select('*').order('sort_order');
+  const {data: itms} = await sb.from('menu_items').select('*').order('sort_order');
+  sections = secs || [];
+  items = itms || [];
+  dbReady = true;
+  renderMenu();
+}
+
+function loadFallback(){
+  // Use seed data as fallback if DB fails
+  sections = SEED_SECTIONS.map(s => ({...s}));
+  items = SEED_ITEMS.map(i => ({...i}));
+  renderMenu();
+}
+
+function setupRealtime(){
+  sb.channel('menu-changes')
+    .on('postgres_changes', {event:'*', schema:'public', table:'menu_sections'}, ()=>loadFromDB())
+    .on('postgres_changes', {event:'*', schema:'public', table:'menu_items'}, ()=>loadFromDB())
+    .subscribe();
+}
+
+// ══════════════════════════════════════════════════════════
+//  RENDER MENU
+// ══════════════════════════════════════════════════════════
+function renderMenu(){
+  const root = document.getElementById('menuRoot');
+  root.innerHTML = '';
+
+  sections.forEach(sec => {
+    const secItems = items.filter(i => i.section_id === sec.id).sort((a,b)=>a.sort_order-b.sort_order);
+    if(!secItems.length) return;
+
+    const block = document.createElement('div');
+    block.className = 'sec-block';
+
+    const nameKey = 'name_'+lang, subKey = 'sub_'+lang;
+    block.innerHTML = '<div class="sec-header"><span class="sec-icon">'+sec.icon+'</span><div><div class="sec-name">'+(sec[nameKey]||sec.name_pt)+'</div><div class="sec-sub">'+(sec[subKey]||sec.sub_pt)+'</div></div></div>';
+
+    let lastSub = null;
+    secItems.forEach(item => {
+      if(item.subcat && item.subcat !== lastSub){
+        lastSub = item.subcat;
+        const sl = document.createElement('div');
+        sl.className = 'subcat-label';
+        sl.textContent = item.subcat;
+        block.appendChild(sl);
+      }
+      const descKey = 'desc_'+lang;
+      const desc = item[descKey] || item.desc_pt || '';
+      const unavailLabel = lang==='en'?'— not available':lang==='es'?'— no disponible':'— indisponível';
+
+      const div = document.createElement('div');
+      div.className = 'menu-item' + (item.avail?'':' unavail');
+      div.innerHTML =
+        '<div class="mi-left">' +
+          '<div class="mi-name">' + item.name + (!item.avail?' <span class="mi-unavail">'+unavailLabel+'</span>':'') + '</div>' +
+          (desc?'<div class="mi-desc">'+desc+'</div>':'') +
+          (item.allergens?'<div class="mi-allerg">⚠ '+item.allergens+'</div>':'') +
+        '</div>' +
+        '<div class="mi-price">' + item.price + '</div>';
+      block.appendChild(div);
+    });
+
+    root.appendChild(block);
+  });
+}
+
+// ══════════════════════════════════════════════════════════
+//  LANG
+// ══════════════════════════════════════════════════════════
+function setLang(l){
+  lang = l;
+  localStorage.setItem('jcat_lang', l);
+  document.querySelectorAll('.lang-btn').forEach((b,i)=>b.classList.toggle('active',['pt','en','es'][i]===l));
+  renderMenu();
+  if(document.getElementById('adminPanel').classList.contains('open')) apRender();
+}
+
+// ══════════════════════════════════════════════════════════
+//  PASSWORD
+// ══════════════════════════════════════════════════════════
+function openPw(){
+  document.getElementById('pwOverlay').classList.add('open');
+  setTimeout(()=>document.getElementById('pwInput').focus(),100);
+}
+function checkPw(){
+  if(document.getElementById('pwInput').value === ADMIN_PW){
+    closeOv('pwOverlay');
+    document.getElementById('pwInput').value='';
+    document.getElementById('pwErr').textContent='';
+    apOpen();
+  } else {
+    document.getElementById('pwErr').textContent='Password incorreta';
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+//  ADMIN PANEL
+// ══════════════════════════════════════════════════════════
+function apOpen(){
+  document.getElementById('adminPanel').classList.add('open');
+  document.getElementById('fabs').style.display='none';
+  apTab = 0;
+  apRender();
+}
+function apClose(){
+  document.getElementById('adminPanel').classList.remove('open');
+  document.getElementById('fabs').style.display='';
+  renderMenu();
+}
+
+function apRender(){
+  // Tabs
+  document.getElementById('apTabs').innerHTML = sections.map((s,i)=>
+    '<button class="ap-tab'+(i===apTab?' active':'')+'" onclick="apSetTab('+i+')">'+s.icon+' '+(s['name_pt'])+'</button>'
+  ).join('');
+
+  // Body
+  const sec = sections[apTab];
+  if(!sec){ document.getElementById('apBody').innerHTML=''; return; }
+  const secItems = items.filter(x=>x.section_id===sec.id).sort((a,b)=>a.sort_order-b.sort_order);
+
+  let html = '<div class="ap-body">';
+  html += '<button class="ap-add-btn" onclick="apAddItem(\''+sec.id+'\')">+ Adicionar item em "'+sec.name_pt+'"</button>';
+
+  let lastSub = null;
+  secItems.forEach((item, idx) => {
+    const globalIdx = items.findIndex(x=>x.id===item.id);
+    if(item.subcat && item.subcat !== lastSub){
+      lastSub = item.subcat;
+      html += '<div class="ap-subcat-lbl">'+item.subcat+'</div>';
+    }
+    const meta = [item.subcat, item.allergens].filter(Boolean).join(' · ');
+    const isFirst = idx===0, isLast = idx===secItems.length-1;
+    const descVal = (item.desc_pt||'').replace(/'/g,"&#39;").replace(/"/g,'&quot;');
+    const nameVal = item.name.replace(/'/g,"&#39;").replace(/"/g,'&quot;');
+    const allergVal = (item.allergens||'').replace(/'/g,"&#39;").replace(/"/g,'&quot;');
+    const priceVal = (item.price||'').replace(/'/g,"&#39;").replace(/"/g,'&quot;');
+    const subcatVal = (item.subcat||'').replace(/'/g,"&#39;").replace(/"/g,'&quot;');
+
+    html += '<div class="ap-card" id="apc_'+item.id+'">' +
+      '<div class="ap-card-head" onclick="apTogCard(\''+item.id+'\')">' +
+        '<span class="ap-dot '+(item.avail?'on':'off')+'"></span>' +
+        '<div class="ap-card-info">' +
+          '<div class="ap-card-name">'+item.name+'</div>' +
+          (meta?'<div class="ap-card-meta">'+meta+'</div>':'') +
+        '</div>' +
+        '<span class="ap-card-price">'+item.price+'</span>' +
+        '<div class="ap-ord-col">' +
+          '<button class="ap-ord" onclick="apMoveUp(event,\''+item.id+'\')" '+(isFirst?'disabled':'')+'>▲</button>' +
+          '<button class="ap-ord" onclick="apMoveDown(event,\''+item.id+'\')" '+(isLast?'disabled':'')+'>▼</button>' +
+        '</div>' +
+        '<span class="ap-chevron">›</span>' +
+      '</div>' +
+      '<div class="ap-form">' +
+        '<div class="ap-row"><span>Disponível</span><button class="ap-tog '+(item.avail?'on':'')+'" id="tog_'+item.id+'" onclick="apTogAvail(\''+item.id+'\')"></button></div>' +
+        '<div class="ap-f"><label>Nome</label><input type="text" id="apn_'+item.id+'" value="'+nameVal+'"></div>' +
+        '<div class="ap-f"><label>Preço</label><input type="text" id="app_'+item.id+'" value="'+priceVal+'"></div>' +
+        '<div class="ap-f"><label>Subcategoria</label><input type="text" id="aps_'+item.id+'" value="'+subcatVal+'" placeholder="ex: Tapas do Mar"></div>' +
+        '<div class="ap-f"><label>Descrição</label><textarea id="apd_'+item.id+'">'+descVal+'</textarea></div>' +
+
+```
+    '<div class="ap-f"><label>Alergénios</label><input type="text" id="apa_'+item.id+'" value="'+allergVal+'"></div>' +
+    '<div class="ap-actions">' +
+      '<button class="ap-save" id="apsv_'+item.id+'" onclick="apSaveItem(\''+item.id+'\')">✓ Guardar alterações</button>' +
+      '<button class="ap-del" onclick="apDelItem(\''+item.id+'\')">🗑 Apagar</button>' +
+    '</div>' +
+  '</div>' +
+'</div>';
+```
+
+});
+html += ‘</div>’;
+document.getElementById(‘apBody’).innerHTML = html;
+}
+
+function apSetTab(i){ apTab=i; apRender(); document.getElementById(‘apTabs’).children[i].scrollIntoView({behavior:‘smooth’,inline:‘center’}); }
+
+function apTogCard(id){
+const el = document.getElementById(‘apc_’+id);
+// Close others
+document.querySelectorAll(’.ap-card.open’).forEach(e=>{ if(e!==el) e.classList.remove(‘open’); });
+el.classList.toggle(‘open’);
+if(el.classList.contains(‘open’)) el.scrollIntoView({behavior:‘smooth’,block:‘nearest’});
+}
+
+function apTogAvail(id){
+const item = items.find(x=>x.id===id);
+if(!item) return;
+item.avail = !item.avail;
+const tog = document.getElementById(‘tog_’+id);
+const dot = document.querySelector(’#apc_’+id+’ .ap-dot’);
+if(tog) tog.classList.toggle(‘on’, item.avail);
+if(dot){ dot.classList.toggle(‘on’, item.avail); dot.classList.toggle(‘off’, !item.avail); }
+}
+
+async function apSaveItem(id){
+const item = items.find(x=>x.id===id);
+if(!item) return;
+item.name = document.getElementById(‘apn_’+id).value.trim();
+item.price = document.getElementById(‘app_’+id).value.trim();
+item.subcat = document.getElementById(‘aps_’+id).value.trim();
+const d = document.getElementById(‘apd_’+id).value;
+item.desc_pt = d; item.desc_en = d; item.desc_es = d;
+item.allergens = document.getElementById(‘apa_’+id).value.trim();
+
+const btn = document.getElementById(‘apsv_’+id);
+btn.textContent = ‘…’;
+btn.disabled = true;
+
+if(dbReady){
+const {error} = await sb.from(‘menu_items’).upsert({
+id: item.id, section_id: item.section_id,
+name: item.name, price: item.price, subcat: item.subcat,
+desc_pt: item.desc_pt, desc_en: item.desc_en, desc_es: item.desc_es,
+allergens: item.allergens, avail: item.avail, sort_order: item.sort_order
+});
+if(error){ showToast(’Erro ao guardar: ’+error.message); }
+else { showToast(‘✓ Guardado na cloud!’); }
+}
+
+btn.textContent = ‘✓ Guardado!’;
+btn.classList.add(‘ok’);
+setTimeout(()=>{ btn.textContent=‘✓ Guardar alterações’; btn.classList.remove(‘ok’); btn.disabled=false; apRender(); }, 1500);
+}
+
+async function apDelItem(id){
+if(!confirm(‘Apagar este item?’)) return;
+items = items.filter(x=>x.id!==id);
+if(dbReady) await sb.from(‘menu_items’).delete().eq(‘id’,id);
+showToast(‘Item apagado’);
+apRender();
+}
+
+async function apMoveUp(e, id){
+e.stopPropagation();
+const sec = sections[apTab];
+const secItems = items.filter(x=>x.section_id===sec.id).sort((a,b)=>a.sort_order-b.sort_order);
+const idx = secItems.findIndex(x=>x.id===id);
+if(idx<=0) return;
+const a = secItems[idx], b2 = secItems[idx-1];
+[a.sort_order, b2.sort_order] = [b2.sort_order, a.sort_order];
+if(dbReady){
+await sb.from(‘menu_items’).upsert([{id:a.id,sort_order:a.sort_order,section_id:a.section_id,name:a.name,price:a.price,subcat:a.subcat,desc_pt:a.desc_pt,desc_en:a.desc_en,desc_es:a.desc_es,allergens:a.allergens,avail:a.avail},{id:b2.id,sort_order:b2.sort_order,section_id:b2.section_id,name:b2.name,price:b2.price,subcat:b2.subcat,desc_pt:b2.desc_pt,desc_en:b2.desc_en,desc_es:b2.desc_es,allergens:b2.allergens,avail:b2.avail}]);
+}
+apRender();
+}
+
+async function apMoveDown(e, id){
+e.stopPropagation();
+const sec = sections[apTab];
+const secItems = items.filter(x=>x.section_id===sec.id).sort((a,b)=>a.sort_order-b.sort_order);
+const idx = secItems.findIndex(x=>x.id===id);
+if(idx>=secItems.length-1) return;
+const a = secItems[idx], b2 = secItems[idx+1];
+[a.sort_order, b2.sort_order] = [b2.sort_order, a.sort_order];
+if(dbReady){
+await sb.from(‘menu_items’).upsert([{id:a.id,sort_order:a.sort_order,section_id:a.section_id,name:a.name,price:a.price,subcat:a.subcat,desc_pt:a.desc_pt,desc_en:a.desc_en,desc_es:a.desc_es,allergens:a.allergens,avail:a.avail},{id:b2.id,sort_order:b2.sort_order,section_id:b2.section_id,name:b2.name,price:b2.price,subcat:b2.subcat,desc_pt:b2.desc_pt,desc_en:b2.desc_en,desc_es:b2.desc_es,allergens:b2.allergens,avail:b2.avail}]);
+}
+apRender();
+}
+
+async function apAddItem(secId){
+const sec = sections.find(x=>x.id===secId);
+const secItems = items.filter(x=>x.section_id===secId);
+const newItem = {
+id: ‘x’+Math.random().toString(36).slice(2,10),
+section_id: secId,
+subcat: ‘’,
+name: ‘Novo item’,
+desc_pt:’’, desc_en:’’, desc_es:’’,
+price: ‘0€’,
+allergens: ‘’,
+avail: true,
+sort_order: secItems.length + 1
+};
+items.push(newItem);
+if(dbReady) await sb.from(‘menu_items’).insert(newItem);
+apRender();
+setTimeout(()=>{
+const el = document.getElementById(‘apc_’+newItem.id);
+if(el){ el.classList.add(‘open’); el.scrollIntoView({behavior:‘smooth’,block:‘center’}); }
+}, 100);
+}
+
+// ══════════════════════════════════════════════════════════
+//  QR CODE
+// ══════════════════════════════════════════════════════════
+let qrInst = null;
+function openQR(){
+document.getElementById(‘qrOverlay’).classList.add(‘open’);
+const inp = document.getElementById(‘qrUrl’);
+if(!inp.value) inp.value = window.location.href !== ‘about:blank’ ? window.location.href : ‘’;
+buildQR();
+}
+function buildQR(){
+const url = document.getElementById(‘qrUrl’).value || ‘https://joanacomeatapa.netlify.app’;
+const c = document.getElementById(‘qrCanvas’);
+c.innerHTML = ‘’;
+new QRCode(c,{text:url,width:180,height:180,colorDark:’#1a1a1a’,colorLight:’#ffffff’,correctLevel:QRCode.CorrectLevel.H});
+}
+function dlQR(){
+const canvas = document.querySelector(’#qrCanvas canvas’);
+const img = document.querySelector(’#qrCanvas img’);
+const a = document.createElement(‘a’);
+a.href = canvas ? canvas.toDataURL(‘image/png’) : img?.src;
+a.download = ‘jcat-qrcode.png’;
+a.click();
+}
+
+// ══════════════════════════════════════════════════════════
+//  UTILS
+// ══════════════════════════════════════════════════════════
+function closeOv(id){ document.getElementById(id).classList.remove(‘open’); }
+document.querySelectorAll(’.overlay’).forEach(o=>o.addEventListener(‘click’,e=>{if(e.target===o)o.classList.remove(‘open’)}));
+
+let toastTimer;
+function showToast(msg, dur=2500){
+const t = document.getElementById(‘toast’);
+t.textContent = msg;
+t.classList.add(‘show’);
+clearTimeout(toastTimer);
+toastTimer = setTimeout(()=>t.classList.remove(‘show’), dur);
+}
+
+// ══════════════════════════════════════════════════════════
+//  START
+// ══════════════════════════════════════════════════════════
+init();
+</script>
+
+</body>
+</html>
