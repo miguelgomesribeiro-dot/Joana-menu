@@ -433,35 +433,25 @@ const SEED_ITEMS = [
 //  INIT & LOAD
 // ══════════════════════════════════════════════════════════
 async function init(){
-  // Always hide loading after max 4 seconds no matter what
   const hideLoading = () => {
     document.getElementById('loadScreen').classList.add('fade');
     setTimeout(()=>document.getElementById('loadScreen').style.display='none', 400);
   };
-  const loadTimeout = setTimeout(hideLoading, 4000);
 
+  // Load from local data immediately — fast and reliable
+  loadFallback();
+
+  // Then try Supabase in background (won't block the menu)
   try {
     const {data: secData, error: secErr} = await sb.from('menu_sections').select('id').limit(1);
-
-    if(secErr || !secData){
-      console.error('Supabase error:', secErr);
-      loadFallback();
-      return;
+    if(!secErr && secData){
+      if(secData.length === 0) await seedDB();
+      await loadFromDB();
+      setupRealtime();
     }
-
-    if(secData.length === 0){
-      showToast('A configurar base de dados...', 3000);
-      await seedDB();
-    }
-
-    await loadFromDB();
-    setupRealtime();
-
   } catch(e) {
-    console.error(e);
-    loadFallback();
+    console.error('Supabase background sync failed:', e);
   } finally {
-    clearTimeout(loadTimeout);
     hideLoading();
   }
 }
