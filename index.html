@@ -433,19 +433,23 @@ const SEED_ITEMS = [
 //  INIT & LOAD
 // ══════════════════════════════════════════════════════════
 async function init(){
+  // Always hide loading after max 4 seconds no matter what
+  const hideLoading = () => {
+    document.getElementById('loadScreen').classList.add('fade');
+    setTimeout(()=>document.getElementById('loadScreen').style.display='none', 400);
+  };
+  const loadTimeout = setTimeout(hideLoading, 4000);
+
   try {
-    // Check if tables have data
     const {data: secData, error: secErr} = await sb.from('menu_sections').select('id').limit(1);
 
-    if(secErr){
-      // Tables may not exist yet — show setup message
-      showToast('⚠️ Configura a base de dados primeiro', 5000);
+    if(secErr || !secData){
+      console.error('Supabase error:', secErr);
       loadFallback();
       return;
     }
 
-    if(!secData || secData.length === 0){
-      // Seed the database
+    if(secData.length === 0){
       showToast('A configurar base de dados...', 3000);
       await seedDB();
     }
@@ -457,10 +461,8 @@ async function init(){
     console.error(e);
     loadFallback();
   } finally {
-    setTimeout(()=>{
-      document.getElementById('loadScreen').classList.add('fade');
-      setTimeout(()=>document.getElementById('loadScreen').style.display='none', 400);
-    }, 1000);
+    clearTimeout(loadTimeout);
+    hideLoading();
   }
 }
 
